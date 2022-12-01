@@ -1,0 +1,279 @@
+---
+title: "DS311 - R Lab Assignment"
+author: "Antoine Martinet"
+date: "11/10/2022"
+output: 
+  html_document:
+    theme: united
+    highlight: tango
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+'''{r}
+
+install.packages("plyr")
+install.packages("magrittr")
+install.packages("dplyr")
+install.packages("tidyr")
+install.packages("ggplot2")
+install.packages("corrr")
+install.packages("corrplot")
+
+'''
+
+## R Assignment 1
+
+-   In this assignment, we are going to apply some of the build in data set in R for descriptive statistics analysis.
+-   To earn full grade in this assignment, students need to complete the coding tasks for each question to get the result.
+-   After finished all the questions, knit the document into HTML format for submission.
+
+### Question 1
+
+Using the **mtcars** data set in R, please answer the following questions.
+
+```{r}
+# Loading the data
+data(mtcars)
+
+# Head of the data set
+head(mtcars)
+```
+
+a.  Report the number of variables and observations in the data set.
+
+```{r}
+
+library(plyr)
+# Enter your code here!
+length(mtcars)
+dim(mtcars)
+
+
+# Answer:
+print("There are total of 11 variables and 32 observations/rows in this data set.")
+```
+
+b.  Print the summary statistics of the data set and report how many discrete and continuous variables are in the data set.
+
+```{r}
+# Enter your code here!
+summary(mtcars)
+str(mtcars)
+
+# Answer:
+print("There are 5 discrete variables and 6 continuous variables in this data set.")
+```
+
+c.  Calculate the mean, variance, and standard deviation for the variable **mpg** and assign them into variable names m, v, and s. Report the results in the print statement.
+
+```{r}
+# Enter your code here!
+m = mean(mtcars$mpg)
+v = var(mtcars$mpg)
+s = sd(mtcars$mpg)
+
+
+
+print(paste("The average of Mile Per Gallon from this data set is ", m , " with variance ", v , " and standard deviation", s, "."))
+```
+
+d.  Create two tables to summarize 1) average mpg for each cylinder class and 2) the standard deviation of mpg for each gear class.
+
+```{r}
+# Enter your code here!
+
+library(dplyr)
+
+
+mtcars %>%
+  group_by(cyl) %>%
+  summarize(AverageMPG = mean(mpg))
+
+mtcars %>%
+  group_by(gear) %>%
+  summarize(sdMPG = sd(mpg)) 
+
+
+
+```
+
+e.  Create a crosstab that shows the number of observations belong to each cylinder and gear class combinations. The table should show how many observations given the car has 4 cylinders with 3 gears, 4 cylinders with 4 gears, etc. Report which combination is recorded in this data set and how many observations for this type of car.
+
+```{r}
+# Enter your code here!
+
+library(dplyr)
+library(tidyr)
+mtcars %>%
+  group_by(cyl, gear) %>%
+  tally() %>%
+  spread(cyl, n)
+
+
+print("The most common car type in this data set is car with 8 cylinders and 3 gears. There are total of 12 cars belong to this specification in the data set.")
+```
+
+------------------------------------------------------------------------
+
+### Question 2
+
+Use different visualization tools to summarize the data sets in this question.
+
+a.  Using the **PlantGrowth** data set, visualize and compare the weight of the plant in the three separated group. Give labels to the title, x-axis, and y-axis on the graph. Write a paragraph to summarize your findings.
+
+```{r}
+# Load the data set
+data("PlantGrowth")
+
+# Head of the data set
+head(PlantGrowth)
+
+# Enter your code here!
+
+library(plyr)
+
+y <- PlantGrowth %>%
+  group_by(group) %>%
+  summarize(AvgWeight = mean(weight))
+
+
+library(ggplot2)
+
+
+a <-ggplot(data=y, aes(main = "AverageWeightpergroup", x=group, y=AvgWeight)) +
+  geom_bar(stat="identity")+labs(title="Average Weight per group")
+a
+
+```
+
+Result:
+
+=\> Report a paragraph to summarize your findings from the plot! Thanks to the plot we can see that plant trt1 are the lightest one, then it is ctrl and the heaviest ones are trt2
+
+b.  Using the **mtcars** data set, plot the histogram for the column **mpg** with 10 breaks. Give labels to the title, x-axis, and y-axis on the graph. Report the most observed mpg class from the data set.
+
+```{r}
+
+hist(mtcars$mpg, main ='# of vehicle per consumption', breaks = 10, xlim = range(10, 35),xlab = 'mpg', ylab = 'number o vehicles')
+
+
+print("Most of the cars in this data set are in the class of 15 mile per gallon.")
+```
+
+c.  Using the **USArrests** data set, create a pairs plot to display the correlations between the variables in the data set. Plot the scatter plot with **Murder** and **Assault**. Give labels to the title, x-axis, and y-axis on the graph. Write a paragraph to summarize your results from both plots.
+
+```{r}
+# Load the data set
+data("USArrests")
+
+# Head of the data set
+head(USArrests)
+
+library(corrr)
+library(corrplot)
+
+# Enter your code here!
+plot(USArrests$Murder, USArrests$Assault, main = "UrbanPop and Murder", xlab='Murder', ylab='Assault')
+corrplot(cor(USArrests), order = "hclust")
+```
+
+Result:
+
+=\> Report a paragraph to summarize your findings from the plot! For a given population, the most numerous arrests are due to assault, then it is rape and finally murder.
+
+------------------------------------------------------------------------
+
+### Question 3
+
+Download the housing data set from www.jaredlander.com and find out what explains the housing prices in New York City.
+
+Note: Check your working directory to make sure that you can download the data into the data folder.
+
+```{r, echo=FALSE}
+# Load and clean the housing data set 
+download.file(url='https://www.jaredlander.com/data/housing.csv',
+              destfile='/Users/SFSU/Desktop/DS311/ds311-R-HW/data/housing.csv', mode='wb')
+housingData <- read.csv('data/housing.csv')
+housingData <- subset(housingData, 
+                      select = c("Neighborhood", "Market.Value.per.SqFt", "Boro", "Year.Built"))
+housingData <- na.omit(housingData)      
+housingData
+```
+
+a.  Create your own descriptive statistics and aggregation tables to summarize the data set and find any meaningful results between different variables in the data set.
+
+```{r}
+# Head of the cleaned data set
+head(housingData)
+
+# Enter your code here!
+i <- housingData %>%
+  group_by(Year.Built) %>%
+  summarize(Market.Value = mean(Market.Value.per.SqFt))
+i
+summary(housingData)
+
+dim(housingData)
+
+```
+
+```{r}
+
+# Enter your code here!
+i <- housingData %>%
+  group_by(Year.Built) %>%
+  summarize(Market.Value = mean(Market.Value.per.SqFt))
+i
+
+
+library(ggplot2)
+
+mean_MarketValue_perYearBuilt <- aggregate(Market.Value.per.SqFt ~ Year.Built, data = housingData, FUN = mean)
+plot(
+  Market.Value.per.SqFt ~ Year.Built, 
+  data = mean_MarketValue_perYearBuilt,
+  type = "l",
+  xlab = "Year built", 
+  ylab = "Market value per Square"
+)
+```
+
+'''{r}
+
+''' b. Create multiple plots to demonstrates the correlations between different variables. Remember to label all axes and give title to each graph.
+
+```{r}
+# Enter your code here!
+i <- housingData %>%
+  group_by(Boro) %>%
+  summarize(Market.Value = mean(Market.Value.per.SqFt))
+i
+
+
+library(ggplot2)
+
+
+a <-ggplot(data=i, aes(main = "Market ValueperSquare per boro", x=Boro, y=Market.Value)) +
+  geom_bar(stat="identity")+labs(title="Market ValueperSquare per boro")
+a
+j <- housingData %>%
+  group_by(Neighborhood) %>%
+  summarize(Market.Value = mean(Market.Value.per.SqFt))
+j
+
+b <-ggplot(data=j, aes(main = "Market ValueperSquare per Neighborhood", x=Neighborhood, y=Market.Value)) +
+  geom_bar(stat="identity")+labs(title="Market ValueperSquare per Neighborhood")
+b
+
+
+
+```
+
+c.  Write a summary about your findings from this exercise.
+
+=\> Enter your answer here!
+
+The housingData set has 2530 observations and 4 variables. The oldest recorder house has bein built in 1825 and the newest one is from 2010. Market value per square meter depends on different boro and even the built Year. The most expensive boro is Manhanttan followed by Brooklyn. The cheapest one is Staten Island. Houses from the 80s are more expensive than the other.
